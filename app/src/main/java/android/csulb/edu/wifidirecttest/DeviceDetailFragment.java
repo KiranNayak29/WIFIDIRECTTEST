@@ -145,66 +145,71 @@ String totl;
 		client_mac_fixed = client_mac_fixed.substring(0, client_mac_fixed.length()-5);
 		Toast.makeText(this.getContext().getApplicationContext(),"FIXED is   :"+client_mac_fixed,Toast.LENGTH_LONG).show();
 		 clientIP = Utils.getIPFromMac(client_mac_fixed);
-		BufferedReader br = null;
-		TextView brb = (TextView) getView().findViewById(R.id.scroll);
-		brb.setText("");
+		if(clientIP==null) {
+			Intent launch= new Intent(this.getContext().getApplicationContext(),WiFiDirectActivity.class);
+			startActivity(launch);
+		}
+			BufferedReader br = null;
+			TextView brb = (TextView) getView().findViewById(R.id.scroll);
+			brb.setText("");
 
 
-		try {
-			br = new BufferedReader(new FileReader("/proc/net/arp"));
-			String line;
-			line=br.readLine();
-			while (line != null) {
+			try {
+				br = new BufferedReader(new FileReader("/proc/net/arp"));
+				String line;
+				line = br.readLine();
+				while (line != null) {
 
-				totl += "\n";
-				totl += line;
-				if (line.indexOf(client_mac_fixed) != -1)
-					// it contains world
-
-				{
-					//String[] splitted = line.split("\t");
-					//clientIP=splitted[0];
-					String ipfinal="";
-					char[] ch=line.toCharArray();
-					//for(int i=0;ch[i]!=' ';i++)
-					//	ipfinal=ipfinal+ch[i];
-				//	clientIP=ipfinal;
 					totl += "\n";
 					totl += line;
+					if (line.indexOf(client_mac_fixed) != -1)
+					// it contains world
 
+					{
+						//String[] splitted = line.split("\t");
+						//clientIP=splitted[0];
+						String ipfinal = "";
+						char[] ch = line.toCharArray();
+						//for(int i=0;ch[i]!=' ';i++)
+						//	ipfinal=ipfinal+ch[i];
+						//	clientIP=ipfinal;
+						totl += "\n";
+						totl += line;
+
+					}
+
+					line = br.readLine();
 				}
-
-				line=br.readLine();
+			} catch (Exception e) {
 			}
-		}
-		catch(Exception e)
-			{}
 
-		// User has picked an image. Transfer it to group owner i.e peer using
-		// FileTransferService.
-		totl += "\n";
-		totl += clientIP;
-		brb.setText(totl);
-		Uri uri = data.getData();
-		TextView statusText = (TextView) mContentView.findViewById(R.id.status_text);
-		statusText.setText("Sending: " + uri);
-		Log.d(WiFiDirectActivity.TAG, "Intent----------- " + uri);
-		Intent serviceIntent = new Intent(getActivity(), FileTransferService.class);
-		serviceIntent.setAction(FileTransferService.ACTION_SEND_FILE);
-		serviceIntent.putExtra(FileTransferService.EXTRAS_FILE_PATH, uri.toString());
-		TextView asv = (TextView)getView().findViewById(R.id.group_owner);
-		String status = asv.getText().toString();
-		Toast.makeText(this.getContext().getApplicationContext(),status,Toast.LENGTH_LONG).show();
-		if(status.equals("Am I the Group Owner? yes")){
-		 serviceIntent.putExtra(FileTransferService.EXTRAS_ADDRESS, clientIP);
-			Toast.makeText(this.getContext().getApplicationContext(),"IN YES sending to" + clientIP,Toast.LENGTH_LONG).show();
-		}else{
-			serviceIntent.putExtra(FileTransferService.EXTRAS_ADDRESS, IP_SERVER);
-			Toast.makeText(this.getContext().getApplicationContext(),"IN no",Toast.LENGTH_LONG).show();
-		}
+			// User has picked an image. Transfer it to group owner i.e peer using
+			// FileTransferService.
+			totl += "\n";
+			totl += clientIP;
+			brb.setText(totl);
+			Uri uri = data.getData();
+			TextView statusText = (TextView) mContentView.findViewById(R.id.status_text);
+			statusText.setText("Sending: " + uri);
+			Log.d(WiFiDirectActivity.TAG, "Intent----------- " + uri);
+			Intent serviceIntent = new Intent(getActivity(), FileTransferService.class);
+			serviceIntent.setAction(FileTransferService.ACTION_SEND_FILE);
+			serviceIntent.putExtra(FileTransferService.EXTRAS_FILE_PATH, uri.toString());
+			TextView asv = (TextView) getView().findViewById(R.id.group_owner);
+			String status = asv.getText().toString();
+			Toast.makeText(this.getContext().getApplicationContext(), status, Toast.LENGTH_LONG).show();
+			if (status.equals("Am I the Group Owner? yes")) {
+				serviceIntent.putExtra(FileTransferService.EXTRAS_ADDRESS, clientIP);
+				Toast.makeText(this.getContext().getApplicationContext(), "IN YES sending to" + clientIP, Toast.LENGTH_LONG).show();
+			} else {
+				serviceIntent.putExtra(FileTransferService.EXTRAS_ADDRESS, IP_SERVER);
+				Toast.makeText(this.getContext().getApplicationContext(), "IN no", Toast.LENGTH_LONG).show();
+			}
 
-		serviceIntent.putExtra(FileTransferService.EXTRAS_PORT, PORT);
-		getActivity().startService(serviceIntent);
+			serviceIntent.putExtra(FileTransferService.EXTRAS_PORT, PORT);
+			getActivity().startService(serviceIntent);
+
+
 	}
 
 	@Override
